@@ -6,7 +6,7 @@
 간선 하나를 제거한다.
 정점 1에서 정점 i 까지의 최단 경로를 출력한다. 경로가 없으면 -1을 출력한다.
 입력
-첫 번째 줄에 그래프의 정점, 간선의 수와 질의의 수를 나타내는 n, m, q 가 주어진다. (1 ≤ n ≤ 1, 000, 1 ≤ m ≤ 100, 000, 1 ≤ q ≤ 200, 000) 정점들은 순서대로 1부터 n까지 번호가 매겨져 있고, 간선들은 순서대로 1부터 m까지 번호가 매겨져 있다.
+첫 번째 줄에 그래프의 정점, 간선의 수와 질의의 수를 나타내는 n, m, q 가 주어진다. (1 ≤ n ≤ 1,000, 1 ≤ m ≤ 100,000, 1 ≤ q ≤ 200,000) 정점들은 순서대로 1부터 n까지 번호가 매겨져 있고, 간선들은 순서대로 1부터 m까지 번호가 매겨져 있다.
 
 이후 m개의 줄로 간선의 정보가 주어진다. i 번째 줄은 간선 i를 나타내며, 두 정수 u, v (1 ≤ u, v ≤ n, u ≠ v) 로 주어진다. 정점 u에서 정점 v로 가는 간선을 의미한다.
 
@@ -40,10 +40,11 @@ typedef struct Edge{
 
 typedef struct Node{
     vector<pair<int,int>> edge;
-    pair<int,int> distanceValue;
+    int distanceValue;
+    Node():distanceValue(INF){};
 };
 
-void update(){
+void update(vector<Node>& list, ){
 
 }
 
@@ -53,6 +54,7 @@ int main(){
     ios_base::sync_with_stdio(false);
     int nodeNumber, edgeNumber, queryNumber;
     cin >> nodeNumber >> edgeNumber >> queryNumber;
+    vector<Node> nodeList(nodeNumber + 1, Node());
     vector<Edge> edgeList(edgeNumber, Edge());
     vector<Query> queryList(queryNumber, Query());
 
@@ -67,7 +69,7 @@ int main(){
         }
     }
 
-    
+    for(int i = 0 ; i <)
 
     return 0;
 }
