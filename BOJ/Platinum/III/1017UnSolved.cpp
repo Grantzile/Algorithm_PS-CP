@@ -57,11 +57,14 @@ class NodeForBipartiteMatching{
         }
 };
 
-bool trySearch(vector<NodeForBipartiteMatching>& list, int root){
+bool trySearch(vector<NodeForBipartiteMatching>& list, int root, int index = 0){
+	cout << index << " " << root << endl;
     int nextNode;
+    bool flowType;
     pair<FlowEdge*, bool> edgeData;
     pair<int,int> edgeEndPoint;
     if (root == list.size() - 1){
+    	cout << "fin!!" << endl;
         return true;
     }
     if (list[root].isVisited()){
@@ -75,18 +78,33 @@ bool trySearch(vector<NodeForBipartiteMatching>& list, int root){
         }
         edgeEndPoint = edgeData.first -> GetEdgeEndPoint();
         if (edgeData.second){
+            flowType = true;
             edgeData.first -> addFlow(1);
             nextNode = edgeEndPoint.second;
             list[root].fillEdgeIndex = i;
         }
         else{
+            flowType = false;
             edgeData.first -> addFlow(-1);
             nextNode = edgeEndPoint.first;
             list[nextNode].fillEdgeIndex = -1;
         }
-        if (trySearch(list, nextNode)){
+        if (nextNode == list.size() - 1 && index % 2 != 0){
+            cout << "error" << endl;
+            continue;
+        }
+        if (trySearch(list, nextNode, index + 1)){
             return true;
         }
+        if (flowType){
+            edgeData.first -> addFlow(-1);
+            nextNode = -1;
+        }
+        else{
+
+        }
+
+        
     }
     return false;
 }
@@ -115,14 +133,14 @@ int main(){
 	ios_base::sync_with_stdio(false);
     int n;
     int count = 0;
-    vector<bool> isPrime(1001,true);
+    vector<bool> isPrime(2001,true);
     vector<int> successTry;
     isPrime[0] = false;
     isPrime[1] = false;
-    for(int i = 2 ; i < 1001; i ++ ){
+    for(int i = 2 ; i < 2001; i ++ ){
         if (isPrime[i]){
-            for(int j = 2 ; i * j < 1001 ; j ++ ){
-                isPrime[i] = false;
+            for(int j = 2 ; i * j < 2001 ; j ++ ){
+                isPrime[i*j] = false;
             }
         }
     }
