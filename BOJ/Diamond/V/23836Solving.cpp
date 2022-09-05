@@ -91,6 +91,7 @@ long long int update(vector<Node>& list, int queryValue, int queryDiff, int quer
 
 long long int search(vector<Node>& list, int index, int left, int right, int root = 1){
     int mid = (left + right) / 2;
+    long long int answer = 0;
     list[root].value += diffSum(list[root].lazyValue, list[root].lazyDiff, left, right);
     list[root * 2].lazyValue += list[root].lazyValue;
     list[root * 2 + 1].lazyValue += list[root].lazyValue + (mid + 1 - left) * lazyDiff;
