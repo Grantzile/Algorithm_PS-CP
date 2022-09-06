@@ -27,12 +27,20 @@ typedef struct UpdateQuery{
 };
 
 int diffSum(int queryValue, int queryDiff, int left, int right){
-    if (((right - left + 1) * (2 * queryValue + (right - left) * queryDiff)) / 2 < 0){
-        cout << "queryValue : " << queryValue << '\n';
-        cout << "queryDiff : " << queryDiff << '\n';
-        cout << "음수 on : " << left << " " << right << " | " << ((right - left + 1) * (2 * queryValue + (right - left) * queryDiff)) / 2 << endl;
+    int queryLeft = queryValue;
+    int queryRight = queryValue + queryDiff * (right - left);
+    if (queryLeft < 0 && queryRight < 0){
+        return 0;
     }
-    return ((right - left + 1) * (2 * queryValue + (right - left) * queryDiff)) / 2;
+    else if ( queryRight < 0 ){
+        return (queryLeft * (queryLeft - 1)) / 2;
+    }
+    else if ( queryLeft < 0 ){
+        return (queryRight * (queryRight - 1)) / 2;
+    }
+    else {
+        return ((right - left + 1) * (2 * queryValue + (right - left) * queryDiff)) / 2;
+    }
 }
 
 int TreeInitialize(vector<TreeNode>& list, int root = 1, int parent = -1, int depth = 0){
@@ -101,7 +109,7 @@ int update(vector<Node>& list, int queryValue, int queryDiff, int queryLeft, int
     }
     else{
         answer += update(list, queryValue, queryDiff, queryLeft, queryRight, left, mid, root * 2);
-        // ! answer += update(list, queryValue + queryDiff * (mid + 1 - left), queryDiff, queryLeft, queryRight, mid + 1, right , root * 2 + 1);
+         answer += update(list, queryValue + queryDiff, queryDiff, queryLeft, queryRight, mid + 1, right , root * 2 + 1); // sibal
         list[root].value += answer;
 //cout << "answer is : " << answer << " on left/right : " << left << " " << right << '\n';
         return answer;
@@ -116,7 +124,7 @@ int search(vector<Node>& list, int index, int left, int right, int root = 1){
     }
     list[root].value += diffSum(list[root].lazyValue, list[root].lazyDiff, left, right);
     list[root * 2].lazyValue += list[root].lazyValue;
-    list[root * 2 + 1].lazyValue += list[root].lazyValue + (mid + 1 - left) * list[root].lazyDiff;
+    list[root * 2 + 1].lazyValue += list[root].lazyValue + (mid + 1 - left) * list[root].lazyDiff; // 여기가 문제
     list[root * 2].lazyDiff += list[root].lazyDiff;
     list[root * 2 + 1].lazyDiff += list[root].lazyDiff;
     list[root].lazyDiff = 0;
@@ -165,12 +173,12 @@ void setDeliveryUpdate(vector<TreeNode>& list, vector<vector<int>>& treeMap,
         //cout << boolalpha << thisQuery.direction << " " << thisQuery.origin << " " << thisQuery.destination << " " << thisQuery.index << endl;
         if (thisQuery.direction){
             update(pathSegment[thisQuery.index], count, 1, thisQuery.origin, thisQuery.destination, 1, (int)treeMap[thisQuery.index].size());
-cout << count << " on : " << thisQuery.origin << " " << thisQuery.destination << '\n';
+//cout << count << " on : " << thisQuery.origin << " " << thisQuery.destination << '\n';
             count += thisQuery.destination - thisQuery.origin + 1;
         }
         else{
             count += thisQuery.destination - thisQuery.origin + 1;
-cout << count -1 << " on : " << thisQuery.origin << " " << thisQuery.destination << '\n';
+//cout << count -1 << " on : " << thisQuery.origin << " " << thisQuery.destination << '\n';
             update(pathSegment[thisQuery.index], count - 1, -1, thisQuery.origin, thisQuery.destination, 1, (int)treeMap[thisQuery.index].size());
         }
     }
