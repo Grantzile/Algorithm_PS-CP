@@ -109,7 +109,7 @@ int update(vector<Node>& list, int queryValue, int queryDiff, int queryLeft, int
     }
     else{
         answer += update(list, queryValue, queryDiff, queryLeft, queryRight, left, mid, root * 2);
-         answer += update(list, queryValue + queryDiff, queryDiff, queryLeft, queryRight, mid + 1, right , root * 2 + 1); // sibal
+        answer += update(list, queryValue, queryDiff, queryLeft, queryRight, mid + 1, right , root * 2 + 1); // query 어떻게 들어가지??
         list[root].value += answer;
 //cout << "answer is : " << answer << " on left/right : " << left << " " << right << '\n';
         return answer;
