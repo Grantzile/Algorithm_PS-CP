@@ -1,36 +1,49 @@
 #include <bits/stdc++.h>
 using namespace std;
 typedef struct TreeNode{
-    vector<long long int> edge;
-    long long int parent;
-    long long int depth;
-    long long int pathId;
-    long long int size;
-    long long int heavyEdge;
-    long long int segmentIndex;
-    TreeNode():depth(-1), pathId(-1), size(1), parent(-1), heavyEdge(-1), segmentIndex(-1), edge(vector<long long int>(0)){};
+    vector<int> edge;
+    int parent;
+    int depth;
+    int pathId;
+    int size;
+    int heavyEdge;
+    int segmentIndex;
+    TreeNode():depth(-1), pathId(-1), size(1), parent(-1), heavyEdge(-1), segmentIndex(-1), edge(vector<int>(0)){};
 };
 
 typedef struct Node{
-    long long int lazyDiff;
-    long long int lazyVal;
-    long long int value;
-}
+    int lazyDiff;
+    int lazyValue;
+    int value;
+};
 
-long long int diffSum(long long int queryValue, long long int queryDiff, long long int left, long long int right){
-    return ((right - left) * (2 * queryValue + (right - left) * queryDiff)) / 2;
+typedef struct UpdateQuery{
+    int index;
+    int origin;
+    int destination;
+    bool direction;
+    UpdateQuery():index(0), origin(0), destination(0), direction(false){};
+    UpdateQuery(int index, int origin, int destination, bool direction): index(index), origin(origin), destination(destination), direction(direction){};
+};
+
+int diffSum(int queryValue, int queryDiff, int left, int right){
+    if (((right - left + 1) * (2 * queryValue + (right - left) * queryDiff)) / 2 < 0){
+        cout << "queryValue : " << queryValue << '\n';
+        cout << "queryDiff : " << queryDiff << '\n';
+        cout << "음수 on : " << left << " " << right << " | " << ((right - left + 1) * (2 * queryValue + (right - left) * queryDiff)) / 2 << endl;
+    }
+    return ((right - left + 1) * (2 * queryValue + (right - left) * queryDiff)) / 2;
 }
 
 int TreeInitialize(vector<TreeNode>& list, int root = 1, int parent = -1, int depth = 0){
     list[root].depth = depth;
     list[root].size = 1;
     list[root].parent = parent;
-    long long int parentIndex;
-    long long int maxWeight = 0;
-    long long int subWeight = 0;
+    int maxWeight = 0;
+    int subWeight = 0;
     for(int i = 0; i < list[root].edge.size() ; i ++ ){
         if (list[root].edge[i] == parent){
-            parentIndex = i;
+            continue;
         }
         subWeight = TreeInitialize(list, list[root].edge[i], root, depth + 1);
         list[root].size += subWeight;
@@ -68,14 +81,19 @@ void SegtreeInitialize(vector<vector<Node>>& pathSegment, vector<vector<int>>& t
     return;
 }
 
-long long int update(vector<Node>& list, int queryValue, int queryDiff, int queryLeft, int queryRight,
+int update(vector<Node>& list, int queryValue, int queryDiff, int queryLeft, int queryRight,
                     int left, int right, int root = 1){
+//cout << root << " !\n";
     int mid = (left + right) / 2;
-    long long int answer = 0;
+    int answer = 0;
     if (queryLeft <= left && right <= queryRight){
-        list[root].lazyVal += queryValue;
+        list[root].lazyValue += queryValue + queryDiff * (left - queryLeft);
         list[root].lazyDiff += queryDiff;
-        answer += diffSum(queryValue, queryDiff, left, right);
+        answer += diffSum(queryValue + queryDiff * (left - queryLeft), queryDiff, left, right);
+//cout << diffSum(queryValue + queryDiff * (left - queryLeft), queryDiff, left, right) << " ?\n";
+//cout << "queryValue + queryDiff * (left - queryLeft) : " <<queryValue + queryDiff * (left - queryLeft) << '\n';  
+//cout << "queryDiff : " << queryDiff << '\n';  
+//cout << "answer is : " << answer << " on left/right : " << left << " " << right << '\n';
         return answer;
     }
     else if ( right < queryLeft || queryRight < left ){
@@ -83,40 +101,94 @@ long long int update(vector<Node>& list, int queryValue, int queryDiff, int quer
     }
     else{
         answer += update(list, queryValue, queryDiff, queryLeft, queryRight, left, mid, root * 2);
-        answer += update(list, queryValue + queryDiff * (mid + 1 - left), queryDiff, queryLeft, queryRight, mid + 1, right , root * 2 + 1);
+        // ! answer += update(list, queryValue + queryDiff * (mid + 1 - left), queryDiff, queryLeft, queryRight, mid + 1, right , root * 2 + 1);
         list[root].value += answer;
+//cout << "answer is : " << answer << " on left/right : " << left << " " << right << '\n';
         return answer;
     }
 }
 
-long long int search(vector<Node>& list, int index, int left, int right, int root = 1){
+int search(vector<Node>& list, int index, int left, int right, int root = 1){
     int mid = (left + right) / 2;
-    long long int answer = 0;
+    int answer = 0;
+    if ( right < index || index < left ){
+        return 0;
+    }
     list[root].value += diffSum(list[root].lazyValue, list[root].lazyDiff, left, right);
     list[root * 2].lazyValue += list[root].lazyValue;
-    list[root * 2 + 1].lazyValue += list[root].lazyValue + (mid + 1 - left) * lazyDiff;
+    list[root * 2 + 1].lazyValue += list[root].lazyValue + (mid + 1 - left) * list[root].lazyDiff;
     list[root * 2].lazyDiff += list[root].lazyDiff;
     list[root * 2 + 1].lazyDiff += list[root].lazyDiff;
     list[root].lazyDiff = 0;
     list[root].lazyValue = 0;
-    if (left <= index && index <= right){
-        answer += list[root].value;
+    if (left == right){
+        return list[root].value;
     }
-    else {
-        return 0;
-    }
-    if (left != right){
+    else{
         answer += search(list, index, left, mid, root * 2);
         answer += search(list, index, mid + 1 , right, root * 2 + 1);
     }
     return answer;
 }
 
+void setDeliveryUpdate(vector<TreeNode>& list, vector<vector<int>>& treeMap,
+                       vector<vector<Node>>& pathSegment, int origin, int destination){
+    int originProbe = origin, destinationProbe = destination;
+    int parentNode;
+    int count = 0;
+    UpdateQuery thisQuery;
+    queue<UpdateQuery> originSide;
+    stack<UpdateQuery> destinationSide;
+    while (list[originProbe].pathId != list[destinationProbe].pathId){
+        if (list[originProbe].depth - list[originProbe].segmentIndex >= list[destinationProbe].depth - list[destinationProbe].segmentIndex){
+            originSide.push(UpdateQuery(list[originProbe].pathId, 1, list[originProbe].segmentIndex, false));
+            originProbe = list[treeMap[list[originProbe].pathId][0]].parent;
+        }
+        else {
+            destinationSide.push(UpdateQuery(list[destinationProbe].pathId, 1, list[destinationProbe].segmentIndex, true));
+            destinationProbe = list[treeMap[list[destinationProbe].pathId][0]].parent;
+        }
+    }
+    if (list[originProbe].segmentIndex > list[destinationProbe].segmentIndex){
+        originSide.push(UpdateQuery(list[originProbe].pathId, list[destinationProbe].segmentIndex, list[originProbe].segmentIndex, false));
+    }
+    else{
+        originSide.push(UpdateQuery(list[originProbe].pathId, list[originProbe].segmentIndex, list[destinationProbe].segmentIndex, true));
+    }
+    while(!destinationSide.empty()){
+        originSide.push(destinationSide.top());
+        destinationSide.pop();
+    }
+    while(!originSide.empty()){
+        thisQuery = originSide.front();
+        originSide.pop();
+        //cout << boolalpha << thisQuery.direction << " " << thisQuery.origin << " " << thisQuery.destination << " " << thisQuery.index << endl;
+        if (thisQuery.direction){
+            update(pathSegment[thisQuery.index], count, 1, thisQuery.origin, thisQuery.destination, 1, (int)treeMap[thisQuery.index].size());
+cout << count << " on : " << thisQuery.origin << " " << thisQuery.destination << '\n';
+            count += thisQuery.destination - thisQuery.origin + 1;
+        }
+        else{
+            count += thisQuery.destination - thisQuery.origin + 1;
+cout << count -1 << " on : " << thisQuery.origin << " " << thisQuery.destination << '\n';
+            update(pathSegment[thisQuery.index], count - 1, -1, thisQuery.origin, thisQuery.destination, 1, (int)treeMap[thisQuery.index].size());
+        }
+    }
+    return;
+}
+
+void printDeliveryValue(vector<TreeNode>& list, vector<vector<int>>& treeMap, vector<vector<Node>>& pathSegment, int queryIndex){
+    int index = list[queryIndex].pathId;
+    int segmentIndex = list[queryIndex].segmentIndex;
+    cout << search(pathSegment[list[queryIndex].pathId], list[queryIndex].segmentIndex, 1, (int)treeMap[list[queryIndex].pathId].size()) << '\n';
+    return;
+}
+
 int main(){
     cin.tie(NULL);
     cout.tie(NULL);
     ios_base::sync_with_stdio(false);
-    long long int n, origin, destination;
+    int n, origin, destination;
     cin >> n;
     vector<TreeNode> list(n + 1,TreeNode());
     vector<vector<int>> treeMap(1,vector<int>(0));
@@ -128,7 +200,20 @@ int main(){
     TreeInitialize(list);
     MappingTree(treeMap, list);
     vector<vector<Node>> pathSegment;
-    
+    SegtreeInitialize(pathSegment, treeMap);
+    int queryNumber, queryType, queryIndex;
+    cin >> queryNumber;
+    for(int i = 0 ; i < queryNumber ; i ++ ){
+        cin >> queryType;
+        if (queryType == 1){
+            cin >> origin >> destination;
+            setDeliveryUpdate(list, treeMap, pathSegment, origin, destination);
+        }
+        else if (queryType == 2){
+            cin >> queryIndex;
+            printDeliveryValue(list, treeMap, pathSegment, queryIndex);
+        }
+    }
     
     return 0;
 }
