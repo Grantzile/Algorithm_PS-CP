@@ -18,6 +18,12 @@ typedef struct Node{
     long long int value;
 };
 
+typedef struct UnionFindNode{
+    long long int parent;
+    long long int size;
+    UnionFindNode():parent(-1), size() {};
+};
+
 typedef struct UpdateQuery{
     long long int index;
     long long int origin;
@@ -182,12 +188,32 @@ void printDeliveryValue(vector<TreeNode>& list, vector<vector<long long int>>& t
     return;
 }
 
+void Union(vector<UnionFindNode>& unionFindList, int left, int right){
+    if (unionFindList[left].size > unionFindList[right].size){
+        unionFindList[left].size += unionFindList[right].size;
+        unionFindList[right].parent = left;
+    }
+    else{
+        unionFindList[right].size += unionFindList[left].size;
+        unionFindList[left].parent = right;
+    }
+    return;
+}
+
+int find(vector<UnionFindNode>& unionFindList, int index){
+    while(unionFindList[index].parent != -1){
+        index = unionFindList[index].parent;
+    }
+    return index;
+}
+
 int main(){
     cin.tie(NULL);
     cout.tie(NULL);
     ios_base::sync_with_stdio(false);
     long long int n, origin, destination;
     cin >> n;
+    vector<UnionFindNode> unionFindList(n + 1 , UnionFindNode());
     vector<TreeNode> list(n + 1,TreeNode());
     vector<vector<long long int>> treeMap(1,vector<long long int>(0));
     for(long long int i = 0 ; i < n - 1; i ++ ){
@@ -201,7 +227,7 @@ int main(){
     SegtreeInitialize(pathSegment, treeMap);
     long long int queryNumber, queryType, queryIndex;
     cin >> queryNumber;
-    for(long long int i = 0 ; i < queryNumber ; i ++ ){
+    for(long long int i = 0 ; i < queryNumber ; i ++ ){ // 바로 Union-find 갈겨도 됨. 근데 연결은 미리 해둬야 함. preprocess 후 확인.
         cin >> queryType;
         if (queryType == 1){
             cin >> origin >> destination;
