@@ -287,5 +287,6 @@ int main(){
 
 /*
 Comment:
-HLD + Union-find / offline Query
+HLD + Union-find / offline Query / Disjoint set
+구현이 빡세다. 그냥 HLD는 구현 태그 붙이는거 의무화하면 안되나?
 */
